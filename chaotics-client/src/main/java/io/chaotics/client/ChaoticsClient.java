@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.chaotics.api.ApiSecretPair;
 import io.chaotics.api.CreateApiRequest;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.Response;
 import org.apache.http.entity.ContentType;
 
 import java.io.IOException;
@@ -20,7 +21,7 @@ public class ChaoticsClient {
     }
 
     public ApiSecretPair createEndpoint(CreateApiRequest createApiRequest) throws IOException {
-        String response = Request.Post(CHAOTICS_URI + "/create")
+        String response = Request.Post(CHAOTICS_URI)
                 .bodyString(objectMapper.writeValueAsString(createApiRequest), ContentType.APPLICATION_JSON)
                 .execute()
                 .returnContent()
@@ -28,15 +29,13 @@ public class ChaoticsClient {
         return objectMapper.readValue(response, ApiSecretPair.class);
     }
 
-    public String getResponse(String apiId) throws IOException {
-        return Request.Get(CHAOTICS_URI + "?apiId=" + apiId)
-                .execute()
-                .returnContent()
-                .asString();
+    public Response getResponse(String id) throws IOException {
+        return Request.Get(CHAOTICS_URI + "/" + id)
+                .execute();
     }
 
     public void deleteEndpoint(ApiSecretPair apiSecretPair) throws IOException {
-        Request.Delete(CHAOTICS_URI + "?apiId=" + apiSecretPair.getApiId())
+        Request.Delete(CHAOTICS_URI + "/" + apiSecretPair.getApiId())
             .addHeader("Authorization", apiSecretPair.getSecret())
             .execute()
             .returnContent()
